@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="每小時回顧">
+<meta name="theme-color" content="#2c2416">
+<title>每小時回顧</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f5f0e8;
+  --surface: #fffdf7;
+  --ink: #2c2416;
+  --ink-light: #7a6e5c;
+  --accent: #c4552a;
+  --accent-soft: #f0ddd4;
+  --line: #e0d8cc;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Noto Serif TC', serif;
+  overflow-x: hidden;
+}
+
+/* ── Status bar spacer ── */
+.safe-top { height: calc(var(--safe-top) + 12px); }
+
+/* ── Top bar ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: calc(var(--safe-top) + 10px);
+}
+.topbar-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-light);
+  text-transform: uppercase;
+}
+.notif-btn {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-light);
+  cursor: pointer;
+  font-family: 'Noto Serif TC', serif;
+  transition: all 0.2s;
+}
+.notif-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Clock hero ── */
+.hero {
+  padding: 24px 20px 16px;
+  text-align: center;
+}
+.clock-display {
+  font-family: 'DM Mono', monospace;
+  font-size: 4rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+.date-label {
+  font-size: 0.75rem;
+  color: var(--ink-light);
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+}
+
+/* ── Progress ── */
+.progress-section {
+  padding: 0 20px 20px;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--ink-light);
+  letter-spacing: 0.06em;
+  margin-bottom: 7px;
+}
+.progress-track {
+  height: 5px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 1s linear;
+}
+
+/* ── Tab bar ── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  padding: 0 20px;
+  gap: 0;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-light);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Pages ── */
+.page { display: none; padding: 20px; }
+.page.active { display: block; }
+
+/* ── Form ── */
+.field { margin-bottom: 18px; }
+.field label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1rem;
+  color: var(--ink);
+  resize: none;
+  line-height: 1.6;
+  -webkit-appearance: none;
+  transition: border-color 0.2s;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+
+/* Mood */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.mood-btn {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 6px;
+  font-size: 0.82rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--ink);
+  font-family: 'Noto Serif TC', serif;
+  line-height: 1.3;
+  -webkit-appearance: none;
+}
+.mood-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s;
+  -webkit-appearance: none;
+}
+.submit-btn:active { background: var(--accent); }
+
+/* ── Log ── */
+.log-entry {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.log-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+.log-mood-tag {
+  font-size: 0.7rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+.log-task { font-size: 0.88rem; color: var(--ink); line-height: 1.5; margin-bottom: 4px; }
+.log-note { font-size: 0.78rem; color: var(--ink-light); line-height: 1.5; font-style: italic; }
+.log-empty { text-align: center; color: var(--ink-light); font-size: 0.85rem; padding: 40px 0; font-style: italic; }
+
+.export-btn {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.82rem;
+  color: var(--ink-light);
+  cursor: pointer;
+  margin-top: 4px;
+  letter-spacing: 0.08em;
+  -webkit-appearance: none;
+}
+.export-btn:active { border-color: var(--accent); color: var(--accent); }
+
+/* ── Bottom safe area ── */
+.safe-bot { height: calc(var(--safe-bot) + 20px); }
+
+/* ── Alarm overlay ── */
+.alarm-overlay {
+  position: fixed; inset: 0;
+  background: rgba(44,36,22,0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.alarm-overlay.show { opacity: 1; pointer-events: all; }
+.alarm-sheet {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 28px 24px calc(var(--safe-bot) + 28px);
+  width: 100%;
+  text-align: center;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.alarm-overlay.show .alarm-sheet { transform: translateY(0); }
+.alarm-bell { font-size: 3rem; margin-bottom: 10px; }
+.alarm-sheet h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 6px; }
+.alarm-sheet p { font-size: 0.85rem; color: var(--ink-light); margin-bottom: 24px; line-height: 1.6; }
+.alarm-cta {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  -webkit-appearance: none;
+}
+
+/* ── Install banner ── */
+.install-banner {
+  margin: 0 20px 16px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.install-banner span { flex: 1; }
+.install-banner strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+.install-x {
+  background: transparent;
+  border: none;
+  color: rgba(245,240,232,0.5);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  -webkit-appearance: none;
+}
+</style>
+</head>
+<body>
+
+<div class="safe-top"></div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-title">每小時回顧</div>
+  <button class="notif-btn" id="notif-btn" onclick="requestNotif()">🔔 開啟通知</button>
+</div>
+
+<!-- Install hint (iOS) -->
+<div class="install-banner" id="install-banner" style="display:none">
+  <span>
+    <strong>加到主畫面當 App 用</strong>
+    點 Safari 分享按鈕 → 加入主畫面
+  </span>
+  <button class="install-x" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
+</div>
+
+<!-- Hero clock -->
+<div class="hero">
+  <div class="clock-display" id="clock">--:--:--</div>
+  <div class="date-label" id="date-label">載入中…</div>
+</div>
+
+<!-- Progress -->
+<div class="progress-section">
+  <div class="progress-meta">
+    <span>本小時進度</span>
+    <span id="mins-left">--</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('record')">📝 記錄</div>
+  <div class="tab" onclick="switchTab('log')">📋 今日紀錄</div>
+</div>
+
+<!-- Record page -->
+<div class="page active" id="page-record">
+  <div class="field">
+    <label>處理的事情</label>
+    <textarea id="task-input" rows="3" placeholder="例：整理設備標籤、回廠商信件…"></textarea>
+  </div>
+  <div class="field">
+    <label>進度與備注</label>
+    <textarea id="note-input" rows="2" placeholder="例：會議室 A/B 完成，C 待確認…"></textarea>
+  </div>
+  <div class="field">
+    <label>當下心情</label>
+    <div class="mood-grid" id="mood-grid">
+      <button class="mood-btn" data-mood="😊 順暢">😊<br>順暢</button>
+      <button class="mood-btn" data-mood="😐 普通">😐<br>普通</button>
+      <button class="mood-btn" data-mood="😩 疲累">😩<br>疲累</button>
+      <button class="mood-btn" data-mood="🔥 專注">🔥<br>專注</button>
+      <button class="mood-btn" data-mood="😤 有點煩">😤<br>有點煩</button>
+      <button class="mood-btn" data-mood="😅 忙亂">😅<br>忙亂</button>
+    </div>
+  </div>
+  <button class="submit-btn" onclick="submitEntry()">儲存這一小時</button>
+  <div class="safe-bot"></div>
+</div>
+
+<!-- Log page -->
+<div class="page" id="page-log">
+  <div id="log-list"></div>
+  <button class="export-btn" onclick="exportLog()">↓ 匯出今日紀錄</button>
+  <div class="safe-bot"></div>
+</div>
+
+<!-- Alarm sheet -->
+<div class="alarm-overlay" id="alarm-overlay">
+  <div class="alarm-sheet">
+    <div class="alarm-bell">🔔</div>
+    <h2 id="alarm-title">整點到了！</h2>
+    <p id="alarm-msg">這一小時過去了，<br>花一分鐘記錄下來吧。</p>
+    <button class="alarm-cta" onclick="dismissAlarm()">開始記錄</button>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  let selectedMood = '';
+  let log = JSON.parse(localStorage.getItem('hourly-log-v2') || '[]');
+  let lastAlertHour = -1;
+  let swReg = null;
+  let notifGranted = false;
+
+  // ── Service Worker ──
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      swReg = reg;
+      console.log('SW registered');
+    });
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'OPEN_FORM') {
+        switchTab('record');
+      }
+    });
+  }
+
+  // ── Notification permission ──
+  async function requestNotif() {
+    if (!('Notification' in window)) {
+      alert('此瀏覽器不支援通知，建議使用 Chrome 或 Safari。');
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    notifGranted = perm === 'granted';
+    updateNotifBtn();
+    if (notifGranted) {
+      document.getElementById('notif-btn').textContent = '🔔 通知已開啟';
+    } else {
+      alert('未允許通知。整點時仍會有畫面提示。');
+    }
+  }
+
+  function updateNotifBtn() {
+    const btn = document.getElementById('notif-btn');
+    if (Notification.permission === 'granted') {
+      btn.textContent = '🔔 通知已開啟';
+      btn.classList.add('active');
+      notifGranted = true;
+    }
+  }
+
+  // ── iOS install hint ──
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !isStandalone && !localStorage.getItem('install-dismissed')) {
+    document.getElementById('install-banner').style.display = 'flex';
+  }
+
+  // ── Clock ──
+  function tick() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
+
+    const days = ['日','一','二','三','四','五','六'];
+    document.getElementById('date-label').textContent =
+      `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} 週${days[now.getDay()]}`;
+
+    const mins = now.getMinutes(), secs = now.getSeconds();
+    const elapsed = mins * 60 + secs;
+    document.getElementById('progress-fill').style.width = (elapsed/3600*100) + '%';
+    const rem = 60 - mins - (secs > 0 ? 1 : 0);
+    document.getElementById('mins-left').textContent = rem === 0 ? '即將提醒！' : `${rem} 分鐘後提醒`;
+
+    if (mins === 0 && secs < 3 && now.getHours() !== lastAlertHour) {
+      lastAlertHour = now.getHours();
+      triggerAlarm(now.getHours());
+    }
+  }
+
+  function triggerAlarm(hour) {
+    const label = `${String(hour).padStart(2,'0')}:00`;
+
+    // Vibrate
+    if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+
+    // Push notification (if app is in background or SW available)
+    if (notifGranted && swReg && swReg.active) {
+      swReg.active.postMessage({ type: 'HOUR_ALARM', hour });
+    } else if (notifGranted && 'Notification' in window) {
+      new Notification(`整點到了 🔔`, {
+        body: `${label} — 這一小時過得怎麼樣？`,
+        tag: 'hour-alarm'
+      });
+    }
+
+    // In-app overlay
+    document.getElementById('alarm-title').textContent = `${label} 整點到了！`;
+    document.getElementById('alarm-overlay').classList.add('show');
+
+    // Sound
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.22, 0.44].forEach(d => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 830; o.type = 'sine';
+        g.gain.setValueAtTime(0, ctx.currentTime + d);
+        g.gain.linearRampToValueAtTime(0.2, ctx.currentTime + d + 0.05);
+        g.gain.linearRampToValueAtTime(0, ctx.currentTime + d + 0.3);
+        o.start(ctx.currentTime + d);
+        o.stop(ctx.currentTime + d + 0.35);
+      });
+    } catch(e){}
+  }
+
+  function dismissAlarm() {
+    document.getElementById('alarm-overlay').classList.remove('show');
+    switchTab('record');
+    document.getElementById('task-input').focus();
+  }
+
+  // ── Tabs ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      t.classList.toggle('active', ['record','log'][i] === name);
+    });
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    if (name === 'log') renderLog();
+  }
+
+  // ── Mood ──
+  document.getElementById('mood-grid').addEventListener('click', e => {
+    const btn = e.target.closest('.mood-btn');
+    if (!btn) return;
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedMood = btn.dataset.mood;
+  });
+
+  // ── Submit ──
+  function submitEntry() {
+    const task = document.getElementById('task-input').value.trim();
+    if (!task) { alert('請填寫處理的事情 😊'); return; }
+    const entry = {
+      time: new Date().toTimeString().slice(0,5),
+      ts: new Date().toISOString(),
+      task,
+      note: document.getElementById('note-input').value.trim(),
+      mood: selectedMood
+    };
+    log.push(entry);
+    localStorage.setItem('hourly-log-v2', JSON.stringify(log));
+    document.getElementById('task-input').value = '';
+    document.getElementById('note-input').value = '';
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    selectedMood = '';
+
+    // Flash feedback
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = '✓ 已儲存';
+    btn.style.background = '#4a7c59';
+    setTimeout(() => {
+      btn.textContent = '儲存這一小時';
+      btn.style.background = '';
+    }, 1800);
+  }
+
+  // ── Render log ──
+  function renderLog() {
+    const list = document.getElementById('log-list');
+    const today = new Date().toDateString();
+    const entries = log.filter(e => new Date(e.ts).toDateString() === today);
+    if (!entries.length) {
+      list.innerHTML = '<div class="log-empty">今天尚無紀錄<br>第一筆等你來寫 ✦</div>';
+      return;
+    }
+    list.innerHTML = [...entries].reverse().map(e => `
+      <div class="log-entry">
+        <div class="log-header">
+          <span class="log-time">${e.time}</span>
+          ${e.mood ? `<span class="log-mood-tag">${e.mood}</span>` : ''}
+        </div>
+        <div class="log-task">${esc(e.task)}</div>
+        ${e.note ? `<div class="log-note">${esc(e.note)}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  // ── Export ──
+  function exportLog() {
+    const today = new Date().toDateString();
+    const entries = log.filter(e => new Date(e.ts).toDateString() === today);
+    if (!entries.length) { alert('今天還沒有紀錄喔！'); return; }
+    const dateStr = new Date().toLocaleDateString('zh-TW');
+    const text = `每小時回顧 ${dateStr}\n${'─'.repeat(28)}\n\n` +
+      entries.map(e => `[${e.time}]${e.mood ? ' ' + e.mood : ''}\n${e.task}${e.note ? '\n→ ' + e.note : ''}`).join('\n\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+    a.download = `hourly-${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+  }
+
+  // ── Init ──
+  updateNotifBtn();
+  renderLog();
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
