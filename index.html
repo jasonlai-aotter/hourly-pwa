@@ -27,346 +27,183 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-html, body {
-  height: 100%;
-  overscroll-behavior: none;
-}
-
+html, body { height: 100%; overscroll-behavior: none; }
 body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: 'Noto Serif TC', serif;
+  background: var(--bg); color: var(--ink);
+  font-family: 'Noto Serif TC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   overflow-x: hidden;
 }
 
-/* ── Status bar spacer ── */
 .safe-top { height: calc(var(--safe-top) + 12px); }
 
-/* ── Top bar ── */
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bg);
-  border-bottom: 1px solid var(--line);
-  padding: 10px 20px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
   padding-top: calc(var(--safe-top) + 10px);
 }
-.topbar-title {
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  color: var(--ink-light);
-  text-transform: uppercase;
+.topbar-title { font-size: 0.72rem; letter-spacing: 0.2em; color: var(--ink-light); text-transform: uppercase; }
+.sync-status {
+  font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;
+  background: var(--accent-soft); color: var(--accent);
 }
-.notif-btn {
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink-light);
-  cursor: pointer;
-  font-family: 'Noto Serif TC', serif;
-  transition: all 0.2s;
-}
-.notif-btn.active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent);
-}
+.sync-status.syncing { background: #e6e0d4; color: var(--ink-light); }
+.sync-status.error { background: #f5d4c8; color: #a13818; }
 
-/* ── Clock hero ── */
-.hero {
-  padding: 24px 20px 16px;
-  text-align: center;
-}
+.hero { padding: 24px 20px 16px; text-align: center; }
 .clock-display {
   font-family: 'DM Mono', 'SF Mono', 'Menlo', 'Courier New', monospace;
-  font-size: 4rem;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
+  font-size: 4rem; font-weight: 400; letter-spacing: -0.02em; line-height: 1;
+  color: var(--ink); font-variant-numeric: tabular-nums;
 }
-.date-label {
-  font-size: 0.75rem;
-  color: var(--ink-light);
-  letter-spacing: 0.1em;
-  margin-top: 6px;
-}
+.date-label { font-size: 0.75rem; color: var(--ink-light); letter-spacing: 0.1em; margin-top: 6px; }
 
-/* ── Progress ── */
-.progress-section {
-  padding: 0 20px 20px;
-}
+.progress-section { padding: 0 20px 20px; }
 .progress-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: var(--ink-light);
-  letter-spacing: 0.06em;
-  margin-bottom: 7px;
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--ink-light); letter-spacing: 0.06em; margin-bottom: 7px;
 }
-.progress-track {
-  height: 5px;
-  background: var(--line);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 3px;
-  transition: width 1s linear;
-}
+.progress-track { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 1s linear; }
 
-/* ── Tab bar ── */
-.tabs {
-  display: flex;
-  border-bottom: 1px solid var(--line);
-  padding: 0 20px;
-  gap: 0;
-}
+.tabs { display: flex; border-bottom: 1px solid var(--line); padding: 0 20px; }
 .tab {
-  flex: 1;
-  text-align: center;
-  padding: 10px 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  color: var(--ink-light);
-  cursor: pointer;
+  flex: 1; text-align: center; padding: 10px 0;
+  font-size: 0.78rem; letter-spacing: 0.06em;
+  color: var(--ink-light); cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-  user-select: none;
+  transition: all 0.2s; user-select: none;
 }
-.tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* ── Pages ── */
 .page { display: none; padding: 20px; }
 .page.active { display: block; }
 
-/* ── Form ── */
 .field { margin-bottom: 18px; }
 .field label {
-  display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  color: var(--ink-light);
-  text-transform: uppercase;
-  margin-bottom: 8px;
+  display: block; font-size: 0.7rem; letter-spacing: 0.12em;
+  color: var(--ink-light); text-transform: uppercase; margin-bottom: 8px;
 }
 textarea {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px;
   padding: 12px 14px;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1rem;
-  color: var(--ink);
-  resize: none;
-  line-height: 1.6;
-  -webkit-appearance: none;
-  transition: border-color 0.2s;
+  font-family: inherit; font-size: 1rem; color: var(--ink);
+  resize: none; line-height: 1.6;
+  -webkit-appearance: none; transition: border-color 0.2s;
 }
 textarea:focus { outline: none; border-color: var(--accent); }
 
-/* Mood */
-.mood-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
+.mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .mood-btn {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 6px;
-  font-size: 0.82rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: var(--ink);
-  font-family: 'Noto Serif TC', serif;
-  line-height: 1.3;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 6px;
+  font-size: 0.82rem; text-align: center; cursor: pointer;
+  transition: all 0.15s; color: var(--ink);
+  font-family: inherit; line-height: 1.3;
   -webkit-appearance: none;
 }
-.mood-btn.selected {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
+.mood-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 .submit-btn {
-  width: 100%;
-  padding: 16px;
-  background: var(--ink);
-  color: var(--bg);
-  border: none;
-  border-radius: 12px;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  margin-top: 6px;
-  transition: background 0.2s;
-  -webkit-appearance: none;
+  width: 100%; padding: 16px;
+  background: var(--ink); color: var(--bg);
+  border: none; border-radius: 12px;
+  font-family: inherit; font-size: 1rem; letter-spacing: 0.1em;
+  cursor: pointer; margin-top: 6px;
+  transition: background 0.2s; -webkit-appearance: none;
 }
 .submit-btn:active { background: var(--accent); }
+.submit-btn:disabled { opacity: 0.5; }
 
-/* ── Log ── */
 .log-entry {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 10px 10px 0;
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0;
+  padding: 14px 16px; margin-bottom: 12px;
 }
-.log-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
+.log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .log-time {
   font-family: 'DM Mono', 'SF Mono', 'Menlo', monospace;
-  font-size: 0.8rem;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem; color: var(--accent); font-variant-numeric: tabular-nums;
 }
 .log-mood-tag {
-  font-size: 0.7rem;
-  background: var(--accent-soft);
-  color: var(--accent);
-  padding: 3px 10px;
-  border-radius: 10px;
+  font-size: 0.7rem; background: var(--accent-soft); color: var(--accent);
+  padding: 3px 10px; border-radius: 10px;
 }
 .log-task { font-size: 0.88rem; color: var(--ink); line-height: 1.5; margin-bottom: 4px; }
 .log-note { font-size: 0.78rem; color: var(--ink-light); line-height: 1.5; font-style: italic; }
 .log-empty { text-align: center; color: var(--ink-light); font-size: 0.85rem; padding: 40px 0; font-style: italic; }
+.log-day-divider {
+  font-size: 0.72rem; color: var(--ink-light); letter-spacing: 0.1em;
+  text-transform: uppercase; margin: 18px 0 10px; padding-left: 4px;
+}
 
 .export-btn {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 0.82rem;
-  color: var(--ink-light);
-  cursor: pointer;
-  margin-top: 4px;
-  letter-spacing: 0.08em;
-  -webkit-appearance: none;
+  width: 100%; padding: 13px;
+  background: transparent; border: 1px solid var(--line); border-radius: 10px;
+  font-family: inherit; font-size: 0.82rem;
+  color: var(--ink-light); cursor: pointer; margin-top: 4px;
+  letter-spacing: 0.08em; -webkit-appearance: none;
 }
 .export-btn:active { border-color: var(--accent); color: var(--accent); }
 
-/* ── Bottom safe area ── */
 .safe-bot { height: calc(var(--safe-bot) + 20px); }
 
-/* ── Alarm overlay ── */
-.alarm-overlay {
+.setup-overlay {
   position: fixed; inset: 0;
-  background: rgba(44,36,22,0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: flex-end;
-  z-index: 50;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
+  background: var(--bg); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
 }
-.alarm-overlay.show { opacity: 1; pointer-events: all; }
-.alarm-sheet {
-  background: var(--surface);
-  border-radius: 20px 20px 0 0;
-  padding: 28px 24px calc(var(--safe-bot) + 28px);
-  width: 100%;
-  text-align: center;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+.setup-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 32px 24px;
+  max-width: 380px; width: 100%; text-align: center;
 }
-.alarm-overlay.show .alarm-sheet { transform: translateY(0); }
-.alarm-bell { font-size: 3rem; margin-bottom: 10px; }
-.alarm-sheet h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 6px; }
-.alarm-sheet p { font-size: 0.85rem; color: var(--ink-light); margin-bottom: 24px; line-height: 1.6; }
-.alarm-cta {
-  width: 100%;
-  padding: 16px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1rem;
-  cursor: pointer;
-  letter-spacing: 0.08em;
-  -webkit-appearance: none;
+.setup-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.setup-card h2 { font-size: 1.15rem; font-weight: 500; margin-bottom: 8px; }
+.setup-card p { font-size: 0.85rem; color: var(--ink-light); margin-bottom: 20px; line-height: 1.6; }
+.setup-card input {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  font-family: inherit; font-size: 0.95rem;
+  margin-bottom: 14px; -webkit-appearance: none;
+}
+.setup-card input:focus { outline: none; border-color: var(--accent); }
+.setup-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-family: inherit; font-size: 0.95rem;
+  cursor: pointer; -webkit-appearance: none;
 }
 
-/* ── Install banner ── */
-.install-banner {
-  margin: 0 20px 16px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.8rem;
-  line-height: 1.4;
+.toast {
+  position: fixed; bottom: calc(var(--safe-bot) + 20px); left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--bg);
+  padding: 10px 20px; border-radius: 20px;
+  font-size: 0.82rem; z-index: 150;
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s;
 }
-.install-banner span { flex: 1; }
-.install-banner strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
-.install-x {
-  background: transparent;
-  border: none;
-  color: rgba(245,240,232,0.5);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 4px;
-  -webkit-appearance: none;
-}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <div class="safe-top"></div>
 
-<!-- Top bar -->
 <div class="topbar">
   <div class="topbar-title">每小時回顧</div>
-  <button class="notif-btn" id="notif-btn" onclick="requestNotif()">🔔 開啟通知</button>
+  <div class="sync-status" id="sync-status" onclick="resetAuth()">☁️ 雲端</div>
 </div>
 
-<!-- Install hint (iOS) -->
-<div class="install-banner" id="install-banner" style="display:none">
-  <span>
-    <strong>加到主畫面當 App 用</strong>
-    點 Safari 分享按鈕 → 加入主畫面
-  </span>
-  <button class="install-x" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
-</div>
-
-<!-- Hero clock -->
 <div class="hero">
   <div class="clock-display" id="clock">--:--:--</div>
   <div class="date-label" id="date-label">&nbsp;</div>
 </div>
 
-<!-- Progress -->
 <div class="progress-section">
   <div class="progress-meta">
     <span>本小時進度</span>
@@ -377,13 +214,11 @@ textarea:focus { outline: none; border-color: var(--accent); }
   </div>
 </div>
 
-<!-- Tabs -->
 <div class="tabs">
   <div class="tab active" onclick="switchTab('record')">📝 記錄</div>
-  <div class="tab" onclick="switchTab('log')">📋 今日紀錄</div>
+  <div class="tab" onclick="switchTab('log')">📋 紀錄列表</div>
 </div>
 
-<!-- Record page -->
 <div class="page active" id="page-record">
   <div class="field">
     <label>處理的事情</label>
@@ -404,84 +239,99 @@ textarea:focus { outline: none; border-color: var(--accent); }
       <button class="mood-btn" data-mood="😅 忙亂">😅<br>忙亂</button>
     </div>
   </div>
-  <button class="submit-btn" onclick="submitEntry()">儲存這一小時</button>
+  <button class="submit-btn" id="submit-btn" onclick="submitEntry()">儲存這一小時</button>
   <div class="safe-bot"></div>
 </div>
 
-<!-- Log page -->
 <div class="page" id="page-log">
   <div id="log-list"></div>
-  <button class="export-btn" onclick="exportLog()">↓ 匯出今日紀錄</button>
+  <button class="export-btn" onclick="exportLog()">↓ 匯出全部紀錄</button>
   <div class="safe-bot"></div>
 </div>
 
-<!-- Alarm sheet -->
-<div class="alarm-overlay" id="alarm-overlay">
-  <div class="alarm-sheet">
-    <div class="alarm-bell">🔔</div>
-    <h2 id="alarm-title">整點到了！</h2>
-    <p id="alarm-msg">這一小時過去了，<br>花一分鐘記錄下來吧。</p>
-    <button class="alarm-cta" onclick="dismissAlarm()">開始記錄</button>
+<div class="setup-overlay" id="setup-overlay" style="display:none">
+  <div class="setup-card">
+    <div class="setup-icon">🔐</div>
+    <h2>首次設定</h2>
+    <p>請輸入你的 API 密碼<br>（在 Cloudflare 設定的 API_SECRET）</p>
+    <input type="password" id="setup-secret" placeholder="API_SECRET" autocomplete="off">
+    <button class="setup-btn" onclick="saveSetup()">連線</button>
   </div>
 </div>
 
+<div class="toast" id="toast">已儲存</div>
+
 <script>
-  // ── State ──
+  const API_BASE = "https://hourlybot.jason200081.workers.dev";
+
   let selectedMood = '';
-  let log = JSON.parse(localStorage.getItem('hourly-log-v2') || '[]');
-  let lastAlertHour = -1;
-  let swReg = null;
-  let notifGranted = false;
+  let allEntries = [];
+  let apiSecret = localStorage.getItem('api-secret') || '';
 
-  // ── Service Worker (best-effort, don't let it break the page) ──
-  try {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').then(reg => {
-        swReg = reg;
-        console.log('SW registered');
-      }).catch(err => console.log('SW register failed:', err));
-      navigator.serviceWorker.addEventListener('message', e => {
-        if (e.data && e.data.type === 'OPEN_FORM') {
-          switchTab('record');
-        }
-      });
-    }
-  } catch(e) { console.log('SW error:', e); }
+  if (!apiSecret) {
+    document.getElementById('setup-overlay').style.display = 'flex';
+  } else {
+    loadEntries();
+  }
 
-  // ── Notification permission ──
-  async function requestNotif() {
-    if (!('Notification' in window)) {
-      alert('此瀏覽器不支援通知，建議使用 Chrome 或 Safari。');
-      return;
+  function saveSetup() {
+    const v = document.getElementById('setup-secret').value.trim();
+    if (!v) { alert('請輸入密碼'); return; }
+    apiSecret = v;
+    localStorage.setItem('api-secret', v);
+    document.getElementById('setup-overlay').style.display = 'none';
+    loadEntries();
+  }
+
+  function resetAuth() {
+    if (!confirm('重設密碼？(資料不會被刪除)')) return;
+    localStorage.removeItem('api-secret');
+    location.reload();
+  }
+
+  async function apiCall(path, method = 'GET', body = null) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-API-Secret': apiSecret },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API_BASE + path, opts);
+    if (res.status === 401) {
+      localStorage.removeItem('api-secret');
+      apiSecret = '';
+      document.getElementById('setup-overlay').style.display = 'flex';
+      throw new Error('Unauthorized');
     }
-    const perm = await Notification.requestPermission();
-    notifGranted = perm === 'granted';
-    updateNotifBtn();
-    if (notifGranted) {
-      document.getElementById('notif-btn').textContent = '🔔 通知已開啟';
-    } else {
-      alert('未允許通知。整點時仍會有畫面提示。');
+    if (!res.ok) throw new Error('API error: ' + res.status);
+    return res.json();
+  }
+
+  function setSyncStatus(state, text) {
+    const el = document.getElementById('sync-status');
+    el.className = 'sync-status' + (state ? ' ' + state : '');
+    el.textContent = text;
+  }
+
+  async function loadEntries() {
+    setSyncStatus('syncing', '⟳ 同步中');
+    try {
+      const data = await apiCall('/api/list');
+      allEntries = data.entries || [];
+      setSyncStatus('', '☁️ 已同步');
+      renderLog();
+    } catch (e) {
+      console.error(e);
+      setSyncStatus('error', '⚠️ 連線失敗');
     }
   }
 
-  function updateNotifBtn() {
-    const btn = document.getElementById('notif-btn');
-    if (Notification.permission === 'granted') {
-      btn.textContent = '🔔 通知已開啟';
-      btn.classList.add('active');
-      notifGranted = true;
-    }
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
   }
 
-  // ── iOS install hint ──
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.navigator.standalone === true
-    || window.matchMedia('(display-mode: standalone)').matches;
-  if (isIOS && !isStandalone && !localStorage.getItem('install-dismissed')) {
-    document.getElementById('install-banner').style.display = 'flex';
-  }
-
-  // ── Clock ──
   function tick() {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2,'0');
@@ -498,66 +348,17 @@ textarea:focus { outline: none; border-color: var(--accent); }
     document.getElementById('progress-fill').style.width = (elapsed/3600*100) + '%';
     const rem = 60 - mins - (secs > 0 ? 1 : 0);
     document.getElementById('mins-left').textContent = rem === 0 ? '即將提醒！' : `${rem} 分鐘後提醒`;
-
-    if (mins === 0 && secs < 3 && now.getHours() !== lastAlertHour) {
-      lastAlertHour = now.getHours();
-      triggerAlarm(now.getHours());
-    }
   }
 
-  function triggerAlarm(hour) {
-    const label = `${String(hour).padStart(2,'0')}:00`;
-
-    // Vibrate
-    if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
-
-    // Push notification (if app is in background or SW available)
-    if (notifGranted && swReg && swReg.active) {
-      swReg.active.postMessage({ type: 'HOUR_ALARM', hour });
-    } else if (notifGranted && 'Notification' in window) {
-      new Notification(`整點到了 🔔`, {
-        body: `${label} — 這一小時過得怎麼樣？`,
-        tag: 'hour-alarm'
-      });
-    }
-
-    // In-app overlay
-    document.getElementById('alarm-title').textContent = `${label} 整點到了！`;
-    document.getElementById('alarm-overlay').classList.add('show');
-
-    // Sound
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [0, 0.22, 0.44].forEach(d => {
-        const o = ctx.createOscillator(), g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = 830; o.type = 'sine';
-        g.gain.setValueAtTime(0, ctx.currentTime + d);
-        g.gain.linearRampToValueAtTime(0.2, ctx.currentTime + d + 0.05);
-        g.gain.linearRampToValueAtTime(0, ctx.currentTime + d + 0.3);
-        o.start(ctx.currentTime + d);
-        o.stop(ctx.currentTime + d + 0.35);
-      });
-    } catch(e){}
-  }
-
-  function dismissAlarm() {
-    document.getElementById('alarm-overlay').classList.remove('show');
-    switchTab('record');
-    document.getElementById('task-input').focus();
-  }
-
-  // ── Tabs ──
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t,i) => {
       t.classList.toggle('active', ['record','log'][i] === name);
     });
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${name}`).classList.add('active');
-    if (name === 'log') renderLog();
+    if (name === 'log' && apiSecret) loadEntries();
   }
 
-  // ── Mood ──
   document.getElementById('mood-grid').addEventListener('click', e => {
     const btn = e.target.closest('.mood-btn');
     if (!btn) return;
@@ -566,78 +367,114 @@ textarea:focus { outline: none; border-color: var(--accent); }
     selectedMood = btn.dataset.mood;
   });
 
-  // ── Submit ──
-  function submitEntry() {
-    const task = document.getElementById('task-input').value.trim();
-    if (!task) { alert('請填寫處理的事情 😊'); return; }
-    const entry = {
-      time: new Date().toTimeString().slice(0,5),
-      ts: new Date().toISOString(),
-      task,
-      note: document.getElementById('note-input').value.trim(),
-      mood: selectedMood
-    };
-    log.push(entry);
-    localStorage.setItem('hourly-log-v2', JSON.stringify(log));
-    document.getElementById('task-input').value = '';
-    document.getElementById('note-input').value = '';
-    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-    selectedMood = '';
-
-    // Flash feedback
-    const btn = document.querySelector('.submit-btn');
-    btn.textContent = '✓ 已儲存';
-    btn.style.background = '#4a7c59';
-    setTimeout(() => {
-      btn.textContent = '儲存這一小時';
-      btn.style.background = '';
-    }, 1800);
-  }
-
-  // ── Render log ──
-  function renderLog() {
-    const list = document.getElementById('log-list');
-    const today = new Date().toDateString();
-    const entries = log.filter(e => new Date(e.ts).toDateString() === today);
-    if (!entries.length) {
-      list.innerHTML = '<div class="log-empty">今天尚無紀錄<br>第一筆等你來寫 ✦</div>';
+  async function submitEntry() {
+    if (!apiSecret) {
+      document.getElementById('setup-overlay').style.display = 'flex';
       return;
     }
-    list.innerHTML = [...entries].reverse().map(e => `
-      <div class="log-entry">
-        <div class="log-header">
-          <span class="log-time">${e.time}</span>
-          ${e.mood ? `<span class="log-mood-tag">${e.mood}</span>` : ''}
-        </div>
-        <div class="log-task">${esc(e.task)}</div>
-        ${e.note ? `<div class="log-note">${esc(e.note)}</div>` : ''}
-      </div>
-    `).join('');
+    const task = document.getElementById('task-input').value.trim();
+    if (!task) { alert('請填寫處理的事情 😊'); return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '儲存中…';
+
+    const entry = {
+      ts: new Date().toISOString(),
+      time: new Date().toTimeString().slice(0,5),
+      task,
+      note: document.getElementById('note-input').value.trim(),
+      mood: selectedMood,
+    };
+
+    try {
+      await apiCall('/api/save', 'POST', entry);
+      document.getElementById('task-input').value = '';
+      document.getElementById('note-input').value = '';
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+      selectedMood = '';
+      btn.textContent = '✓ 已儲存';
+      toast('已同步到雲端 ☁️');
+      setTimeout(() => {
+        btn.textContent = '儲存這一小時';
+        btn.disabled = false;
+      }, 1500);
+      loadEntries();
+    } catch (e) {
+      btn.textContent = '儲存這一小時';
+      btn.disabled = false;
+      alert('儲存失敗，請檢查網路或密碼');
+    }
+  }
+
+  function renderLog() {
+    const list = document.getElementById('log-list');
+    if (!allEntries.length) {
+      list.innerHTML = '<div class="log-empty">尚無紀錄<br>第一筆等你來寫 ✦</div>';
+      return;
+    }
+
+    const sorted = [...allEntries].sort((a,b) => new Date(b.ts) - new Date(a.ts));
+    const groups = {};
+    sorted.forEach(e => {
+      const d = new Date(e.ts);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+
+    const todayKey = new Date().toISOString().slice(0,10);
+    list.innerHTML = Object.keys(groups).map(key => {
+      const label = key === todayKey ? `今天 · ${key}` : key;
+      return `
+        <div class="log-day-divider">${label}</div>
+        ${groups[key].map(e => `
+          <div class="log-entry">
+            <div class="log-header">
+              <span class="log-time">${e.time}</span>
+              ${e.mood ? `<span class="log-mood-tag">${e.mood}</span>` : ''}
+            </div>
+            <div class="log-task">${esc(e.task)}</div>
+            ${e.note ? `<div class="log-note">${esc(e.note)}</div>` : ''}
+          </div>
+        `).join('')}
+      `;
+    }).join('');
   }
 
   function esc(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
   }
 
-  // ── Export ──
   function exportLog() {
-    const today = new Date().toDateString();
-    const entries = log.filter(e => new Date(e.ts).toDateString() === today);
-    if (!entries.length) { alert('今天還沒有紀錄喔！'); return; }
-    const dateStr = new Date().toLocaleDateString('zh-TW');
-    const text = `每小時回顧 ${dateStr}\n${'─'.repeat(28)}\n\n` +
-      entries.map(e => `[${e.time}]${e.mood ? ' ' + e.mood : ''}\n${e.task}${e.note ? '\n→ ' + e.note : ''}`).join('\n\n');
+    if (!allEntries.length) { alert('還沒有紀錄喔！'); return; }
+    const sorted = [...allEntries].sort((a,b) => new Date(a.ts) - new Date(b.ts));
+    const lines = sorted.map(e => {
+      const d = new Date(e.ts);
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      return `[${ds} ${e.time}]${e.mood ? ' ' + e.mood : ''}\n${e.task}${e.note ? '\n→ ' + e.note : ''}`;
+    });
+    const text = `每小時回顧 全部紀錄\n${'─'.repeat(28)}\n\n` + lines.join('\n\n');
     const a = document.createElement('a');
     a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
-    a.download = `hourly-${new Date().toISOString().slice(0,10)}.txt`;
+    a.download = `hourly-all-${new Date().toISOString().slice(0,10)}.txt`;
     a.click();
   }
 
-  // ── Init ──
-  updateNotifBtn();
-  renderLog();
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }
+  } catch(e) {}
+
   tick();
   setInterval(tick, 1000);
+
+  setInterval(() => {
+    if (document.getElementById('page-log').classList.contains('active') && apiSecret) {
+      loadEntries();
+    }
+  }, 60000);
 </script>
 </body>
 </html>
