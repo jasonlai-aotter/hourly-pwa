@@ -188,6 +188,82 @@ textarea:focus { outline: none; border-color: var(--accent); }
   transition: all 0.3s;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Export modal ── */
+.export-overlay {
+  position: fixed; inset: 0;
+  background: rgba(44,36,22,0.5);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  z-index: 180;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.export-modal {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(var(--safe-bot) + 24px);
+  width: 100%; max-width: 500px;
+  max-height: 92vh; overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.export-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+}
+.export-header h3 { font-size: 1.05rem; font-weight: 500; }
+.export-close {
+  background: transparent; border: none;
+  font-size: 1.2rem; color: var(--ink-light);
+  cursor: pointer; padding: 4px 8px;
+  -webkit-appearance: none;
+}
+.export-section { margin-bottom: 20px; }
+.export-label {
+  font-size: 0.7rem; letter-spacing: 0.12em;
+  color: var(--ink-light); text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.preset-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+}
+.preset-btn {
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 4px;
+  font-size: 0.78rem; font-family: inherit;
+  color: var(--ink); cursor: pointer;
+  transition: all 0.15s; -webkit-appearance: none;
+}
+.preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.date-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.date-row input {
+  flex: 1; padding: 10px 12px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+  font-family: inherit; font-size: 0.88rem;
+  color: var(--ink); -webkit-appearance: none;
+}
+.date-row input:focus { outline: none; border-color: var(--accent); }
+.date-dash { color: var(--ink-light); font-size: 0.82rem; }
+
+.format-row { display: flex; gap: 6px; }
+.format-btn {
+  flex: 1; padding: 10px 4px;
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; font-family: inherit;
+  font-size: 0.82rem; color: var(--ink);
+  cursor: pointer; transition: all 0.15s;
+  -webkit-appearance: none;
+}
+.format-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.export-preview {
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 12px;
+  font-size: 0.8rem; color: var(--ink-light);
+  margin-bottom: 18px; line-height: 1.6;
+}
 </style>
 </head>
 <body>
@@ -245,8 +321,53 @@ textarea:focus { outline: none; border-color: var(--accent); }
 
 <div class="page" id="page-log">
   <div id="log-list"></div>
-  <button class="export-btn" onclick="exportLog()">↓ 匯出全部紀錄</button>
+  <button class="export-btn" onclick="openExportModal()">↓ 匯出紀錄</button>
   <div class="safe-bot"></div>
+</div>
+
+<!-- Export modal -->
+<div class="export-overlay" id="export-overlay" style="display:none">
+  <div class="export-modal">
+    <div class="export-header">
+      <h3>匯出紀錄</h3>
+      <button class="export-close" onclick="closeExportModal()">✕</button>
+    </div>
+
+    <div class="export-section">
+      <div class="export-label">快速選擇</div>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="setPreset('today')">今天</button>
+        <button class="preset-btn" onclick="setPreset('yesterday')">昨天</button>
+        <button class="preset-btn" onclick="setPreset('week')">本週</button>
+        <button class="preset-btn" onclick="setPreset('lastweek')">上週</button>
+        <button class="preset-btn" onclick="setPreset('month')">本月</button>
+        <button class="preset-btn" onclick="setPreset('lastmonth')">上月</button>
+        <button class="preset-btn" onclick="setPreset('all')">全部</button>
+      </div>
+    </div>
+
+    <div class="export-section">
+      <div class="export-label">自訂日期範圍</div>
+      <div class="date-row">
+        <input type="date" id="date-from" onchange="updatePreview()">
+        <span class="date-dash">到</span>
+        <input type="date" id="date-to" onchange="updatePreview()">
+      </div>
+    </div>
+
+    <div class="export-section">
+      <div class="export-label">格式</div>
+      <div class="format-row">
+        <button class="format-btn selected" data-fmt="txt" onclick="selectFormat('txt')">📄 文字</button>
+        <button class="format-btn" data-fmt="md" onclick="selectFormat('md')">📝 Markdown</button>
+        <button class="format-btn" data-fmt="csv" onclick="selectFormat('csv')">📊 CSV</button>
+      </div>
+    </div>
+
+    <div class="export-preview" id="export-preview">選擇範圍以預覽…</div>
+
+    <button class="submit-btn" id="export-confirm" onclick="doExport()">下載 0 筆紀錄</button>
+  </div>
 </div>
 
 <div class="setup-overlay" id="setup-overlay" style="display:none">
@@ -262,7 +383,7 @@ textarea:focus { outline: none; border-color: var(--accent); }
 <div class="toast" id="toast">已儲存</div>
 
 <script>
-  const API_BASE = "https://diaryalarmclock.jason200081.workers.dev";
+  const API_BASE = "https://hourlybot.jason200081.workers.dev";
 
   let selectedMood = '';
   let allEntries = [];
@@ -446,19 +567,181 @@ textarea:focus { outline: none; border-color: var(--accent); }
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
   }
 
-  function exportLog() {
+  // ── Export modal ──
+  let selectedFormat = 'txt';
+
+  function openExportModal() {
     if (!allEntries.length) { alert('還沒有紀錄喔！'); return; }
-    const sorted = [...allEntries].sort((a,b) => new Date(a.ts) - new Date(b.ts));
-    const lines = sorted.map(e => {
-      const d = new Date(e.ts);
-      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      return `[${ds} ${e.time}]${e.mood ? ' ' + e.mood : ''}\n${e.task}${e.note ? '\n→ ' + e.note : ''}`;
+    document.getElementById('export-overlay').style.display = 'flex';
+    setPreset('today');
+  }
+
+  function closeExportModal() {
+    document.getElementById('export-overlay').style.display = 'none';
+  }
+
+  function fmtDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function setPreset(preset) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`.preset-btn[onclick*="${preset}"]`);
+    if (btn) btn.classList.add('active');
+
+    const now = new Date();
+    let from, to;
+
+    switch(preset) {
+      case 'today':
+        from = to = fmtDate(now); break;
+      case 'yesterday': {
+        const y = new Date(now); y.setDate(y.getDate()-1);
+        from = to = fmtDate(y); break;
+      }
+      case 'week': {
+        // 本週一 ~ 今天 (週一為一週開始)
+        const day = now.getDay() || 7;
+        const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+        from = fmtDate(mon); to = fmtDate(now); break;
+      }
+      case 'lastweek': {
+        const day = now.getDay() || 7;
+        const lastMon = new Date(now); lastMon.setDate(now.getDate() - day + 1 - 7);
+        const lastSun = new Date(lastMon); lastSun.setDate(lastMon.getDate() + 6);
+        from = fmtDate(lastMon); to = fmtDate(lastSun); break;
+      }
+      case 'month': {
+        const first = new Date(now.getFullYear(), now.getMonth(), 1);
+        from = fmtDate(first); to = fmtDate(now); break;
+      }
+      case 'lastmonth': {
+        const first = new Date(now.getFullYear(), now.getMonth()-1, 1);
+        const last = new Date(now.getFullYear(), now.getMonth(), 0);
+        from = fmtDate(first); to = fmtDate(last); break;
+      }
+      case 'all': {
+        if (allEntries.length) {
+          const sorted = [...allEntries].sort((a,b) => new Date(a.ts) - new Date(b.ts));
+          from = fmtDate(new Date(sorted[0].ts));
+          to = fmtDate(new Date(sorted[sorted.length-1].ts));
+        } else {
+          from = to = fmtDate(now);
+        }
+        break;
+      }
+    }
+
+    document.getElementById('date-from').value = from;
+    document.getElementById('date-to').value = to;
+    updatePreview();
+  }
+
+  function selectFormat(fmt) {
+    selectedFormat = fmt;
+    document.querySelectorAll('.format-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.fmt === fmt);
     });
-    const text = `每小時回顧 全部紀錄\n${'─'.repeat(28)}\n\n` + lines.join('\n\n');
+  }
+
+  function getEntriesInRange() {
+    const from = document.getElementById('date-from').value;
+    const to = document.getElementById('date-to').value;
+    if (!from || !to) return [];
+    const fromTs = new Date(from + 'T00:00:00').getTime();
+    const toTs = new Date(to + 'T23:59:59').getTime();
+    return allEntries
+      .filter(e => {
+        const t = new Date(e.ts).getTime();
+        return t >= fromTs && t <= toTs;
+      })
+      .sort((a,b) => new Date(a.ts) - new Date(b.ts));
+  }
+
+  function updatePreview() {
+    // 自訂日期變動時清除 preset 高亮
+    if (event && event.target && event.target.tagName === 'INPUT') {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    }
+    const entries = getEntriesInRange();
+    const preview = document.getElementById('export-preview');
+    const btn = document.getElementById('export-confirm');
+
+    if (!entries.length) {
+      preview.textContent = '此區間內沒有紀錄';
+      btn.textContent = '無紀錄可下載';
+      btn.disabled = true;
+      return;
+    }
+
+    const days = new Set(entries.map(e => e.ts.slice(0,10))).size;
+    preview.innerHTML = `共 <strong>${entries.length}</strong> 筆紀錄，跨 <strong>${days}</strong> 天<br>
+      最早：${entries[0].ts.slice(0,10)} ${entries[0].time}<br>
+      最晚：${entries[entries.length-1].ts.slice(0,10)} ${entries[entries.length-1].time}`;
+    btn.textContent = `下載 ${entries.length} 筆紀錄`;
+    btn.disabled = false;
+  }
+
+  function doExport() {
+    const entries = getEntriesInRange();
+    if (!entries.length) return;
+    const from = document.getElementById('date-from').value;
+    const to = document.getElementById('date-to').value;
+    const rangeLabel = from === to ? from : `${from}_to_${to}`;
+
+    let content, ext, mime;
+
+    if (selectedFormat === 'txt') {
+      const lines = entries.map(e => {
+        const ds = e.ts.slice(0,10);
+        return `[${ds} ${e.time}]${e.mood ? ' ' + e.mood : ''}\n${e.task}${e.note ? '\n→ ' + e.note : ''}`;
+      });
+      content = `每小時回顧 ${from} ～ ${to}\n${'─'.repeat(28)}\n共 ${entries.length} 筆\n\n` + lines.join('\n\n');
+      ext = 'txt'; mime = 'text/plain';
+    } else if (selectedFormat === 'md') {
+      // 依日期分組
+      const groups = {};
+      entries.forEach(e => {
+        const k = e.ts.slice(0,10);
+        if (!groups[k]) groups[k] = [];
+        groups[k].push(e);
+      });
+      const parts = [`# 每小時回顧 ${from} ～ ${to}`, `共 ${entries.length} 筆紀錄\n`];
+      Object.keys(groups).sort().forEach(k => {
+        parts.push(`\n## ${k}\n`);
+        groups[k].forEach(e => {
+          parts.push(`### ${e.time}${e.mood ? ' ' + e.mood : ''}`);
+          parts.push(`- **事項**: ${e.task}`);
+          if (e.note) parts.push(`- **備注**: ${e.note}`);
+          parts.push('');
+        });
+      });
+      content = parts.join('\n');
+      ext = 'md'; mime = 'text/markdown';
+    } else { // csv
+      const rows = [['日期','時間','心情','處理事項','進度備注']];
+      entries.forEach(e => {
+        const ds = e.ts.slice(0,10);
+        rows.push([ds, e.time, e.mood || '', e.task, e.note || '']);
+      });
+      content = rows.map(r => r.map(c =>
+        `"${String(c).replace(/"/g,'""')}"`
+      ).join(',')).join('\n');
+      // BOM for Excel UTF-8 compatibility
+      content = '\uFEFF' + content;
+      ext = 'csv'; mime = 'text/csv';
+    }
+
+    const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
-    a.download = `hourly-all-${new Date().toISOString().slice(0,10)}.txt`;
+    a.href = url;
+    a.download = `hourly-${rangeLabel}.${ext}`;
     a.click();
+    URL.revokeObjectURL(url);
+
+    toast(`已下載 ${entries.length} 筆紀錄 ✓`);
+    closeExportModal();
   }
 
   try {
