@@ -349,9 +349,9 @@ textarea:focus { outline: none; border-color: var(--accent); }
     <div class="export-section">
       <div class="export-label">自訂日期範圍</div>
       <div class="date-row">
-        <input type="date" id="date-from" onchange="updatePreview()">
+        <input type="date" id="date-from" onchange="updatePreview(true)">
         <span class="date-dash">到</span>
-        <input type="date" id="date-to" onchange="updatePreview()">
+        <input type="date" id="date-to" onchange="updatePreview(true)">
       </div>
     </div>
 
@@ -658,9 +658,9 @@ textarea:focus { outline: none; border-color: var(--accent); }
       .sort((a,b) => new Date(a.ts) - new Date(b.ts));
   }
 
-  function updatePreview() {
+  function updatePreview(fromUserInput) {
     // 自訂日期變動時清除 preset 高亮
-    if (event && event.target && event.target.tagName === 'INPUT') {
+    if (fromUserInput) {
       document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
     }
     const entries = getEntriesInRange();
@@ -753,11 +753,8 @@ textarea:focus { outline: none; border-color: var(--accent); }
   tick();
   setInterval(tick, 1000);
 
-  setInterval(() => {
-    if (document.getElementById('page-log').classList.contains('active') && apiSecret) {
-      loadEntries();
-    }
-  }, 60000);
+  // 移除每 60 秒自動刷新，避免燒 KV 額度
+  // 資料只在使用者主動切換到「紀錄列表」或儲存新紀錄時載入
 </script>
 </body>
 </html>
